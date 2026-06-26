@@ -1,6 +1,5 @@
 from database.DB_connect import DBConnect
 from model.artisti import Artista
-from model.genre import Genre
 from model.tracks import Track
 
 
@@ -12,51 +11,40 @@ class DAO():
         result = []
 
         cursor = conn.cursor(dictionary=True)
-        query = """select *
-                from genre g """
+        query = """select distinct g.Name 
+                    from genre g 
+                    order by g.Name 
+                    """
 
         cursor.execute(query)
 
         for row in cursor:
-            result.append(Genre(**row))
+            result.append(row["Name"])
 
         cursor.close()
         conn.close()
         return result
 
+
     @staticmethod
-    def getAllArtisti():
+    def gettAllNodes(genre):
         conn = DBConnect.get_connection()
 
         result = []
 
         cursor = conn.cursor(dictionary=True)
-        query = """select *
-                    from artist a """
+        query = """select distinct a.*
+            from artist a, track t, album a2 , genre g 
+            where a.ArtistId = a2.ArtistId 
+            and a2.AlbumId = t.AlbumId 
+            and t.GenreId = g.GenreId 
+            and g.Name = %s
+                """
 
         cursor.execute(query)
 
         for row in cursor:
             result.append(Artista(**row))
-
-        cursor.close()
-        conn.close()
-        return result
-
-    @staticmethod
-    def getAllTracks():
-        conn = DBConnect.get_connection()
-
-        result = []
-
-        cursor = conn.cursor(dictionary=True)
-        query = """select *
-                from track t  """
-
-        cursor.execute(query)
-
-        for row in cursor:
-            result.append(Track(**row))
 
         cursor.close()
         conn.close()
