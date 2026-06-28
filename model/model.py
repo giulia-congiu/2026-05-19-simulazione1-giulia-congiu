@@ -76,9 +76,6 @@ class Model:
         return bestinf, best
 
 
-
-
-
     def buildGraph(self, genre):
         self._graph.clear()
         # aggiunge i nodi filtrati per nMin
@@ -119,3 +116,176 @@ class Model:
                 else:
                     self._graph.add_edge(self.idMap[a], self.idMap[b], weight=pesotot)
                     self._graph.add_edge(self.idMap[b], self.idMap[a], weight=pesotot)
+
+
+ #ESERCIZIO 1: non orientato
+        #nodi: artisti con almeno una traccia in una playlist
+        # archi= artisti collegati se almeno 1 playlist ha tracce di entrambi e peso= playlist in common
+        # def buildGraphes1(self):
+        #     self._Nodies1= DAO.getnodeses1()
+        #     idMapes1= {}
+        #     for a in self._Nodies1:
+        #         idMapes1[a.id] = a
+        #         self._graph.add_node(a)
+        #
+        #     result = DAO.getEdgeses1(idMapes1)
+        #     playlistMap= defaultdict(list)
+        #     for playlist, artista in result:
+        #         playlistMap[playlist].append(artista)
+        #
+        #     pesoarco= defaultdict(int)
+        #     for playlist, artisti in playlistMap.items():
+        #         for a, b in itertools.combinations(artisti,2 ):
+        #             pesoarco[(a,b)] +=1
+        #
+        #     for (a,b), peso in pesoarco.items():
+        #         self._graph.add_edge(idMapes1[a],idMapes1[b],weight=peso)
+
+
+        #ESERCIZIO 2: orientato
+        #NODI: clienti che hanno acquistato almeno 1 traccia rock
+        #Arco: due clienti sono collegati se hanno acquistato almeno un genere in comune.
+        # Verso: dal cliente che ha acquistato più tracce al cliente che ne ha acquistate meno.
+        # In caso di parità inserire entrambi gli archi.
+        # Peso: somma del numero di tracce acquistate dai due clienti.
+
+        # def buildGraphes2(self):
+        #     result = DAO.getresult()
+        #
+        #     generi = defaultdict(list)
+        #     for genere, cliente in result:
+        #         generi[genere].append(artista)
+        #
+        #     tracceCliente = defaultdict(int)
+        #     for genere, cliente in result:
+        #         tracceCliente[cliente] += 1
+        #
+        #     # trovo tutte le coppie collegate
+        #     coppie = set()
+        #     for genere, clienti in generi.items():
+        #         for a, b in itertools.combinations(clienti, 2):
+        #             coppie.add((a, b))
+        #
+        #     # creo archi con verso e peso
+        #     for (a, b) in coppie:
+        #         pop_a = tracceCliente[a]
+        #         pop_b = tracceCliente[b]
+        #         weight = pop_a + pop_b
+        #
+        #         if pop_a > pop_b:
+        #             self._graph.add_edge(idMap[a], idMap[b], weight=weight)
+        #         elif pop_a < pop_b:
+        #             self._graph.add_edge(idMap[b], idMap[a], weight=weight)
+        #         else:
+        #             self._graph.add_edge(idMap[a], idMap[b], weight=weight)
+        #             self._graph.add_edge(idMap[b], idMap[a], weight=weight)
+
+
+        #ESERCIZIO 3
+        #Costruire un grafo non orientato.
+        # Nodi: album contenenti almeno 5 tracce.
+        # Arco: due album sono collegati se almeno un cliente ha acquistato tracce di entrambi.
+        # Peso: numero di clienti in comune.
+        # def buildGraphes1(self):
+        #     self._Nodies1= DAO.getnodeses1()
+        #     idMapes1= {}
+        #     for a in self._Nodies1:
+        #         idMapes1[a.id] = a
+        #         self._graph.add_node(a)
+        #
+        #     result = DAO.getEdgeses1(idMapes1)
+        #     customerMap= defaultdict(list)
+        #     for c, al in result:
+        #         customerMap[c].append(al)
+        #
+        #     pesoarco= defaultdict(int)
+        #     for c, album in customerMap.items():
+        #         for a, b in itertools.combinations(album, 2):
+        #             pesoarco[(a,b)]+=1
+        #
+        #     for (a,b) , peso in pesoarco.items():
+        #         if a in idMapes1 and b in idMapes1: #controlla che gli archi siano nel grafo
+        #             self._graph.add_edge(idMapes1[a],idMapes1[b],weight=peso)
+
+
+        # #ESERCIZIO 8
+        # #Costruire un grafo orientato.
+        # #Nodi: tutti i media type.
+        # #Arco: due media type sono collegati se almeno un cliente ha acquistato entrambi.
+        # #Verso: dal media type con più acquisti verso quello con meno acquisti.
+        # #Peso: somma degli acquisti. = poplarità
+        # def buildGraphes8(self):
+        #     self._nodes = DAO.getNodeses8()  # tutti i media type
+        #     idMap = {}
+        #     for m in self._nodes:
+        #         idMap[m.id] = m
+        #         self._graph.add_node(m)
+        #
+        #     result = DAO.getResultes8()  # (customerId, mediaTypeId)
+        #
+        #     # mappa cliente → lista mediaType
+        #     customerMap = defaultdict(list)
+        #     for cliente, mediaType in result:
+        #         customerMap[cliente].append(mediaType)
+        #
+        #     # popolarità globale di ogni mediaType
+        #     popolarita = defaultdict(int)
+        #     for cliente, mediaType in result:
+        #         popolarita[mediaType] += 1
+        #
+        #     # trovo coppie e creo archi
+        #     coppie = set()
+        #     for cliente, mediaTypes in customerMap.items():
+        #         for a, b in itertools.combinations(mediaTypes, 2):
+        #             coppie.add((a, b))
+        #
+        #     for (a, b) in coppie:
+        #         pop_a = popolarita[a]
+        #         pop_b = popolarita[b]
+        #         weight = pop_a + pop_b
+        #
+        #         if pop_a > pop_b:
+        #             self._graph.add_edge(idMap[a], idMap[b], weight=weight)
+        #         elif pop_a < pop_b:
+        #             self._graph.add_edge(idMap[b], idMap[a], weight=weight)
+        #         else:
+        #             self._graph.add_edge(idMap[a], idMap[b], weight=weight)
+        #             self._graph.add_edge(idMap[b], idMap[a], weight=weight)
+
+        #ESERCIZIO 9
+        # Costruire un grafo orientato.
+        # Nodi: tutti gli artisti con almeno una traccia acquistata.
+        # Arco: due artisti sono collegati se almeno un cliente ha acquistato entrambi.
+        # Verso: dall'artista con durata totale delle tracce maggiore verso quello con durata minore.
+        # Peso: somma delle durate.
+        # result = DAO.getCustomerArtist()  # (customerId, artistId)
+        # durate = DAO.getDurataArtisti()  # (artistId, durata)
+        # # durata già calcolata dal DAO
+        # durataArtista = {}
+        # for artista, durata in durate:
+        #     durataArtista[artista] = durata
+        #
+        # # customerMap semplice, senza dict
+        # customerMap = defaultdict(list)
+        # for cliente, artista in result:
+        #     customerMap[cliente].append(artista)
+        #
+        # # coppie
+        # coppie = set()
+        # for cliente, artisti in customerMap.items():
+        #     for a, b in itertools.combinations(artisti, 2):
+        #         coppie.add((a, b))
+        #
+        # # archi (identico a prima)
+        # for (a, b) in coppie:
+        #     dur_a = durataArtista[a]
+        #     dur_b = durataArtista[b]
+        #     weight = dur_a + dur_b
+        #
+        #     if dur_a > dur_b:
+        #         self._graph.add_edge(idMap[a], idMap[b], weight=weight)
+        #     elif dur_a < dur_b:
+        #         self._graph.add_edge(idMap[b], idMap[a], weight=weight)
+        #     else:
+        #         self._graph.add_edge(idMap[a], idMap[b], weight=weight)
+        #         self._graph.add_edge(idMap[b], idMap[a], weight=weight)
