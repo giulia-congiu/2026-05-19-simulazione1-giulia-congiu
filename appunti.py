@@ -281,9 +281,19 @@ class Model:
     # self._graph.edges(data=True)   → lista (u, v, {"weight": w})
 
     # --- Vicini ---
-    # self._graph.neighbors(nodo)    → Graph non orientato
+    # self._graph.neighbors(nodo)    → Graph non orientato, nodi adiacenti a quello selezionato (es in flight)
     # self._graph.successors(nodo)   → DiGraph (solo uscenti)
     # self._graph.predecessors(nodo) → DiGraph (solo entranti)
+
+    def getVicini(self, source):
+        vicini = self._grafo.neighbors(source)
+        viciniTuples = []
+        for v in vicini:
+            viciniTuples.append((v, self._grafo[source][v]["weight"]))
+
+        viciniTuples.sort(key=lambda x: x[1], reverse=True)
+
+        return viciniTuples
 
     # --- Grado ---
     # self._graph.degree(nodo)       → Graph
@@ -296,7 +306,8 @@ class Model:
     # self._graph.in_edges(nodo, data=True)    → DiGraph entranti
 
     # --- Connettività (solo Graph) ---
-    # nx.node_connected_component(self._graph, nodo)  → set nodi raggiungibili
+    # nx.node_connected_component(self._graph, nodo)  → set nodi raggiungibili:
+        return v1 in nx.node_connected_component(self._graph, v0) #true se esiste cammino tra v0e v1
     # nx.number_connected_components(self._graph)      → intero
     # components = list(nx.connected_components(self._graph))
     # largest = max(components, key=len)
@@ -305,8 +316,10 @@ class Model:
     # subgraph = self._graph.subgraph(largest).copy()
 
     # --- Cammini minimi ---
-    # nx.dijkstra_path(self._graph, u, v)              → [u, ..., v]
+    # nx.dijkstra_path(self._graph, u, v)              → percorso tra due nodi[u, ..., v]
     # costo, path = nx.single_source_dijkstra(self._graph, u, v)
+
+    #VEDI ALTRI PERCORSI IN FLIGHT DELAY MODEL-GET PATH
 
     # --- Visite ---
     # archi = nx.bfs_edges(self._graph, source)  → coppie (u,v) ampiezza
@@ -342,10 +355,71 @@ class Model:
 # ================================================================
 # 7. RICORSIONE — TUTTE LE CASISTICHE
 # ================================================================
+    def cercaCammino(self, nodoPartenza, ____):
+        self._bestPath = []
+        self._bestScore = 0  # oppure togliere se uso len()
+        parziale = [nodoPartenza]
 
+        # SCELTA 5: primo passo fuori? (solo se vincolo usa parziale[-2])
+        # SE SÌ:
+        #     for v in self._graph._______(nodoPartenza):
+        #         parziale.append(v)
+        #         self._ricorsione(parziale, ____)
+        #         parziale.pop()
+        # SE NO:
+        #     self._ricorsione(parziale, ____)
+        return self._bestPath, self._bestScore
+
+    def _ricorsione(self, parziale, ____):
+        # ──────────────────────────────────────
+        # SCELTA 3: c'è un nodo finale?
+        # SE SÌ (senza lunghezza esatta):
+        #     if parziale[-1] == ____:
+        # SE NO:
+        #     (salvo sempre, senza if)
+        # ──────────────────────────────────────
+
+        # ──────────────────────────────────────
+        # SCELTA 1: cosa ottimizzo?
+        # LUNGHEZZA:  if len(parziale) > len(self._bestPath):
+        # PESO:       if self._score(parziale) > self._bestScore:
+        # ──────────────────────────────────────
+        self._bestPath = copy.deepcopy(parziale)
+        # ──────────────────────────────────────
+        # SCELTA 2: c'è un limite?
+        # ESATTA:   if len(parziale) == lun:
+        #               (mettere ottimalità + nodo finale QUI DENTRO, non sopra)
+        #               return
+        # MASSIMA:  if len(parziale) == t + 1:
+        #               return
+        # NESSUNO:  (niente return)
+        # ──────────────────────────────────────
+
+        # ──────────────────────────────────────
+        # ESPANSIONE
+        # ──────────────────────────────────────
+        for n in self._graph._______(parziale[-1]):
+            #                neighbors (Graph) o successors (DiGraph)
+            # SCELTA 4: vincolo sull'espansione?
+            # NESSUNO:      if n not in parziale:
+            # PESO CRESC:   if n not in parziale and peso_nuovo > peso_prec:
+            # PESO DECRESC: if n not in parziale and peso_nuovo < peso_prec:
+            # ATTRIBUTO:    if n not in parziale and n.attr == parziale[-1].attr:
+
+            #if n not in parziale ____:
+                parziale.append(n)
+                self._ricorsione(parziale, ____)
+                parziale.pop()
+
+        def _score(self, parziale):
+            score = 0
+            for i in range(len(parziale) - 1):
+                score += self._graph[parziale[i]][parziale[i + 1]]["weight"]
+            return score
 # ────────────────────────────────────────────────────────────────
 # CASO R1 — Lunghezza esatta + nodo finale
 # ────────────────────────────────────────────────────────────────
+
     def getCamminoR1(self, v0, end, lun):
         self._bestPath = []
         self._bestScore = 0
@@ -354,11 +428,12 @@ class Model:
         return self._bestPath, self._bestScore
 
     def _ricorsioneR1(self, parziale, lun, end):
+        #CONDIZIONE DI DI OTTIMALITA'
         if len(parziale) == lun:
             if parziale[-1] == end and self._score(parziale) > self._bestScore:
                 self._bestScore = self._score(parziale)
                 self._bestPath = copy.deepcopy(parziale)
-            return  # mi fermo SEMPRE a lunghezza raggiunta
+            return  # TERMINAZIOEN: mi fermo SEMPRE a lunghezza raggiunta
 
         for n in self._graph.successors(parziale[-1]):  # .neighbors() se Graph
             if n not in parziale:
@@ -370,7 +445,7 @@ class Model:
 # ────────────────────────────────────────────────────────────────
 # CASO R2 — Lunghezza massima + nodo finale
 # ────────────────────────────────────────────────────────────────
-
+#(FLIGHT) - PESO MASSIMO
     def getCamminoR2(self, v0, end, t):
         self._bestPath = []
         self._bestScore = 0
@@ -380,11 +455,13 @@ class Model:
 
     def _ricorsioneR2(self, parziale, end, t):
         # salvo se sono arrivato a destinazione (ma NON mi fermo)
+        #CONDIZONE DI OTTIMALITA'
         if parziale[-1] == end:
             if self._score(parziale) > self._bestScore:
                 self._bestScore = self._score(parziale)
                 self._bestPath = copy.deepcopy(parziale)
 
+        #CONDIZONE DI TERMINAZIONE
         # mi fermo solo se ho esaurito le tratte
         if len(parziale) == t + 1:  # t tratte = t+1 nodi
             return
@@ -397,9 +474,10 @@ class Model:
 
 
 # ────────────────────────────────────────────────────────────────
-# CASO R3 — Nessun nodo finale, vincolo pesi decrescenti
+# CASO R3 — NODO iniziale, Nessun nodo finale, vincolo pesi decrescenti
 # ────────────────────────────────────────────────────────────────
-
+# (BASEBALL)- PERCORSO DI PESO MASSIMO
+#SE C'è VINCOLO SUI PESI, PRIMO PASSO FUORI!! (PARZIALE[-2])
     def getCamminoR3(self, v0):
         self._bestPath = []
         self._bestScore = 0
@@ -585,15 +663,15 @@ class Controller:
         for o in lista:
             self._view._dd1.options.append(
                 ft.dropdown.Option(
-                    data=o,
-                    key=str(o),
+                    data=o, #serve ad associare un oggetto all'opzione,
+                    key=str(o), #quello che ottieni con .value, anche quella che mostro nel dd
                     on_click=self._handleDD1
                 )
             )
         self._view.update_page()
 
     def _handleDD1(self, e):
-        self._sceltaDD1 = e.control.data
+        self._sceltaDD1 = e.control.data #ridà l'oggetto salvato nel dd
 
     # --- RIEMPIRE DROPDOWN CON VALORI SEMPLICI (on_change sul DD) ---
     def fillDDValori(self, lista):
