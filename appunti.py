@@ -404,6 +404,28 @@ class Model:
             # NESSUNO:      if n not in parziale:
             # PESO CRESC:   if n not in parziale and peso_nuovo > peso_prec:
             # PESO DECRESC: if n not in parziale and peso_nuovo < peso_prec:
+                    for n in self._graph.successors(parziale[-1]):  # DiGraph → successors
+                        peso_prec = self._graph[parziale[-2]][parziale[-1]]["weight"]
+                        peso_nuovo = self._graph[parziale[-1]][n]["weight"]
+                        if n not in parziale and peso_nuovo > peso_prec:
+                            parziale.append(n)
+                            self._ricorsione(parziale)
+                            parziale.pop()
+
+                    #ALTRO MODO UGUALE PER NON DOVER FARE IL PRIMO PASSO FUORI
+                        def cercaCammino(self, nodoPartenza):
+                            self._bestPath = []
+                            parziale = [nodoPartenza]
+                            self._ricorsione(parziale, -1)  # -1 così qualsiasi peso è > di lastWeight
+                            return self._bestPath
+                        #ESPANSIONE
+                            for _, vicino, data in self._graph.out_edges(parziale[-1], data=True):
+                                peso = data["weight"]
+                                if peso > lastWeight and vicino not in parziale:
+                                    parziale.append(vicino)
+                                    self._ricorsione(parziale, peso)
+                                    parziale.pop()
+
             # ATTRIBUTO:    if n not in parziale and n.attr == parziale[-1].attr:
 
             #if n not in parziale ____:
@@ -416,6 +438,43 @@ class Model:
             for i in range(len(parziale) - 1):
                 score += self._graph[parziale[i]][parziale[i + 1]]["weight"]
             return score
+
+    #CASO FORMULA 1 IN CUI CERCO UN SET
+    def cercaSet(self, k):
+        self._bestSet = []
+        self._bestVal = float('inf')  # o 0 se massimizzi
+        components = list(nx.connected_components(self._graph))
+
+        if len(components) < k:
+            return None, 0
+
+        parziale = []
+        self._ricorsione(components, k, parziale, 0)
+        return self._bestSet, self._bestVal
+
+    def _ricorsione(self, components, k, parziale, idx):
+        # HO SCELTO ABBASTANZA?
+        if len(parziale) == k:
+            val = self._valuta(parziale)
+            if val < self._bestVal:  # < se minimizzo, > se massimizzo
+                self._bestVal = val
+                self._bestSet = copy.deepcopy(parziale)
+            return
+
+        # POSSO ANCORA SCEGLIERE?
+        if idx >= len(components):
+            return
+        if len(components) - idx < k - len(parziale):
+            return  # impossibile arrivare a k
+
+        # PROVO OGNI NODO DI QUESTA COMPONENTE
+        for nodo in components[idx]:
+            parziale.append(nodo)
+            self._ricorsione(components, k, parziale, idx + 1)
+            parziale.pop()
+
+        # SALTO QUESTA COMPONENTE
+        self._ricorsione(components, k, parziale, idx + 1)
 # ────────────────────────────────────────────────────────────────
 # CASO R1 — Lunghezza esatta + nodo finale
 # ────────────────────────────────────────────────────────────────
